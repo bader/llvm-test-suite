@@ -1,7 +1,7 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 // RUN: %CPU_RUN_PLACEHOLDER SYCL_PI_TRACE=2 %t.out separate equally %CPU_CHECK_PLACEHOLDER --check-prefix CHECK-SEPARATE
 // RUN: %CPU_RUN_PLACEHOLDER SYCL_PI_TRACE=2 %t.out shared equally %CPU_CHECK_PLACEHOLDER --check-prefix CHECK-SHARED --implicit-check-not piContextCreate --implicit-check-not piMemBufferCreate
-// RUN: %CPU_RUN_PLACEHOLDER SYCL_PI_TRACE=2 %t.out fused  equally %CPU_CHECK_PLACEHOLDER --check-prefix CHECK-FUSED --implicit-check-not piContextCreate --implicit-check-not piMemBufferCreate
+// RUN: %CPU_RUN_PLACEHOLDER SYCL_PI_TRACE=2 %t.out fused  equally %CPU_CHECK_PLACEHOLDER --check-prefix CHECK-FUSED --implicit-check-not piProgramBuild --implicit-check-not piContextCreate --implicit-check-not piMemBufferCreate
 //
 // Intel OpenCL CPU Runtime supports device partition on all (multi-core)
 // platforms. Other devices may not support this.
@@ -146,8 +146,10 @@ static bool check_fused_context(device dev, buffer<int, 1> buf,
   context fused_context(devices);
   // CHECK-FUSED: Create fused context
   // CHECK-FUSED: ---> piContextCreate
+  // CHECK-FUSED: ---> piProgramBuild
   //
-  // Make sure that a single context is created: see --implicit-check-not above.
+  // Make sure that a single context is created and device code is built only
+  // once: see --implicit-check-not above.
 
   log_pi("Test root device");
   {
